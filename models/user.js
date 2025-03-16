@@ -1,16 +1,10 @@
-const mongoose = require("mongoose");
+import { Schema, model } from "mongoose";
 
-const CarSchema = new mongoose.Schema({
-  brand: { type: String, required: true },
-  model: { type: String, required: true },
-  year: { type: Number, required: true },
-  phone: { type: String, required: true, unique: true }, // One phone per car
-});
-
-const UserSchema = new mongoose.Schema({
+const UserSchema = new Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  defaultPhone: { type: String, required: true, unique: true },
 });
 
-module.exports = mongoose.model("User", UserSchema);
+export default model("User", UserSchema);

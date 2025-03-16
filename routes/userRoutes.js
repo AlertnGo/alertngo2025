@@ -1,15 +1,30 @@
-const express = require("express");
-const bcrypt = require("bcrypt");
-const router = express.Router();
-const User = require("../models/user");
+import { Router } from "express";
+import { hash } from "bcrypt";
+const router = Router();
+import User from "../models/user";
 
 // Create a new user
 router.post("/", async (req, res) => {
+  if (
+    !req.body.name ||
+    !req.body.email ||
+    !req.body.password ||
+    !req.body.defaultPhone
+  ) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+  const userExite = await User.findOne({
+    email: req.body.email,
+  });
+  if (userExite) {
+    return res.status(400).json({ error: "User already exist" });
+  }
   try {
     const user = new User({
       name: req.body.name,
       email: req.body.email,
-      password: await bcrypt.hash(req.body.password, 10),
+      password: await hash(req.body.password, 10),
+      defaultPhone: req.body.defaultPhone,
     });
     await user.save();
     res.status(201).json(user);
@@ -28,38 +43,4 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Add a car to a user
-router.post("/:userId/cars", async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const { brand, model, year, phone } = req.body;
-
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ error: "User not found" });
-
-    // Check if phone number is already used
-    const phoneExists = await User.findOne({ "cars.phone": phone });
-    if (phoneExists)
-      return res.status(400).json({ error: "Phone number already in use" });
-
-    user.cars.push({ brand, model, year, phone });
-    await user.save();
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get a user's cars
-router.get("/:userId/cars", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.userId);
-    if (!user) return res.status(404).json({ error: "User not found" });
-
-    res.json(user.cars);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-module.exports = router;
+export default router;
