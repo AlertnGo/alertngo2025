@@ -1,7 +1,7 @@
-import { Router } from "express";
-import { hash } from "bcrypt";
-const router = Router();
-import User from "../models/user";
+const express = require("express");
+const bcrypt = require("bcrypt");
+const router = express.Router();
+const User = require("../models/user");
 
 // Create a new user
 router.post("/", async (req, res) => {
@@ -23,7 +23,7 @@ router.post("/", async (req, res) => {
     const user = new User({
       name: req.body.name,
       email: req.body.email,
-      password: await hash(req.body.password, 10),
+      password: await bcrypt.hash(req.body.password, 10),
       defaultPhone: req.body.defaultPhone,
     });
     await user.save();
@@ -43,4 +43,10 @@ router.get("/", async (req, res) => {
   }
 });
 
-export default router;
+//login
+
+//edit
+
+//delete
+
+module.exports = router;
