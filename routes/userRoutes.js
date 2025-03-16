@@ -1,11 +1,16 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
 const router = express.Router();
 const User = require("../models/user");
 
 // Create a new user
 router.post("/", async (req, res) => {
   try {
-    const user = new User(req.body);
+    const user = new User({
+      name: req.body.name,
+      email: req.body.email,
+      password: await bcrypt.hash(req.body.password, 10),
+    });
     await user.save();
     res.status(201).json(user);
   } catch (error) {
