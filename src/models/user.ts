@@ -23,8 +23,20 @@ export interface UserType extends Document {
   updatedAt: Date;
 }
 
+const CarSchema: Schema = new Schema({
+  brand: { type: String, required: true },
+  model: { type: String, required: true },
+  year: { type: Number, required: true },
+  phone: { type: String, required: true, unique: true },
+  status: { type: String, required: true, default: "PENDING" },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+  images: { type: String, default: "" },
+});
+
 const UserSchema: Schema = new Schema({
-  name: { type: String, required: true },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   dateOfBirth: { type: Date, required: true },
@@ -34,14 +46,7 @@ const UserSchema: Schema = new Schema({
   isVerified: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true },
   isDeleted: { type: Boolean, default: false },
-  cars: [
-    {
-      brand: { type: String, required: true },
-      model: { type: String, required: true },
-      year: { type: Number, required: true },
-      phone: { type: String, required: true, unique: true },
-    },
-  ],
+  cars: [CarSchema],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

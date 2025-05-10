@@ -1,13 +1,14 @@
-import express, { Request, Response, RequestHandler } from "express";
+import express, { RequestHandler } from "express";
 import bcrypt from "bcrypt";
-import User, { UserType } from "../models/user";
+import User from "../models/user";
 
 const router = express.Router();
 
 // Create a new user
 const createUser: RequestHandler = async (req, res): Promise<void> => {
   if (
-    !req.body.name ||
+    !req.body.firstName ||
+    !req.body.lastName ||
     !req.body.email ||
     !req.body.password ||
     !req.body.defaultPhone
@@ -24,7 +25,8 @@ const createUser: RequestHandler = async (req, res): Promise<void> => {
   }
   try {
     const user = new User({
-      name: req.body.name,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
       email: req.body.email,
       password: await bcrypt.hash(req.body.password, 10),
       defaultPhone: req.body.defaultPhone,
@@ -33,16 +35,6 @@ const createUser: RequestHandler = async (req, res): Promise<void> => {
     res.status(201).json(user);
   } catch (error) {
     res.status(400).json({ error: (error as Error).message });
-  }
-};
-
-// Get all users
-const getUsers: RequestHandler = async (req, res): Promise<void> => {
-  try {
-    const users = await User.find();
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
   }
 };
 
@@ -62,8 +54,42 @@ const login: RequestHandler = async (req, res): Promise<void> => {
   res.json(user);
 };
 
-router.post("/", createUser);
-router.get("/", getUsers);
+// Get all users
+const getUsers: RequestHandler = async (req, res): Promise<void> => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message });
+  }
+};
+
+// Get user by id
+const getUserById: RequestHandler = async (req, res): Promise<void> => {
+  const { id } = req.params;
+  const user = await User.findById(id);
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+  res.json(user);
+};
+
+// Update user by id
+const updateUserById: RequestHandler = async (req, res): Promise<void> => {
+  const { id } = req.params;
+  const user = await User.findByIdAndUpdate(id, req.body, { new: true });
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+  res.json(user);
+};
+
+router.get("/all", getUsers);
+router.get("/:id", getUserById);
+router.put("/:id", updateUserById);
+router.post("/signup", createUser);
 router.post("/login", login);
 
 export default router;
